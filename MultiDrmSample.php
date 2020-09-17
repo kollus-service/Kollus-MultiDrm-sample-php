@@ -50,6 +50,10 @@
 			$drmType = "PlayReady";
 			$streamingType = "dash";
 			break;
+		case 'Edg':
+			$drmType = "PlayReady";
+			$streamingType = "dash";
+			break;
 		case 'Chrome':
 			$drmType = "Widevine";
 			$streamingType = "dash";
