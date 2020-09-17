@@ -26,7 +26,8 @@
 	// function - 브라우저 체크 
 	function getStreamingType() {
 		//echo $_SERVER['HTTP_USER_AGENT'];
-		$arrBrowsers = ["CriOS","Edge","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
+		//$arrBrowsers = ["CriOS","Edge","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
+		$arrBrowsers = ["CriOS","Edge","Edg","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
 		$agent = $_SERVER['HTTP_USER_AGENT'];
 		$userBrowser = '';
 		
@@ -69,6 +70,11 @@
 			$drmType = "FairPlay";
 			$streamingType = "hls";
 			break;
+		}
+		
+		if (strpos($agent, "Macintosh") && strpos($agent, "Edg") ) {
+			$drmType = "Widevine";
+			$streamingType = "dash";
 		}
 
 		//echo '<br> drmType : ' .$drmType;
