@@ -128,8 +128,11 @@
 					'persistent' => false,
 					'duration' => 86400
 				),
-			'allow_mobile_abnormal_device' => false,
-			'playready_security_level' => 0
+				'security_policy' =>
+				array(
+					'allow_mobile_abnormal_device' => false,
+					'playready_security_level' => 0
+				)
 		);
 
 		// step2 - 라이선스 룰 암호화
