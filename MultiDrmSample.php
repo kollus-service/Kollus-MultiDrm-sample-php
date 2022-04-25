@@ -121,7 +121,27 @@
 		$drmType = getStreamingType()[0];                  // inkaDRM DRM Type
 
 		// step1 - 설정 값 입력
-		$token = array(
+		if($drmType == 'Widevine'){
+			$token = array(
+				'policy_version' =>2,
+				'playback_policy' =>
+					array(
+						'persistent' => true,
+						'license_duration' => 86400,
+						'rental_duration' => 0,
+						'playback_duration'	=> 0
+					),
+					'security_policy' =>
+					array(
+						'widevine' =>
+						array(
+							'override_device_revocation' => true
+						)
+					)
+				);
+			
+		}else{
+			$token = array(
 			'playback_policy'=> 
 				array(
 					'limit' => true,
@@ -133,7 +153,8 @@
 					'allow_mobile_abnormal_device' => false,
 					'playready_security_level' => 0
 				)
-		);
+			);
+		}
 
 		// step2 - 라이선스 룰 암호화
 		$token = json_encode($token);
