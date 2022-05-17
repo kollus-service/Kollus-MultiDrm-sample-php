@@ -126,21 +126,22 @@
 				'policy_version' =>2,
 				'playback_policy' =>
 					array(
-						'persistent' => true,
-						'license_duration' => 86400,
-						'rental_duration' => 0,
-						'playback_duration'	=> 0
+						'limit' => true,
+						'persistent' => false,
+						'duration' => 86400
 					),
-					'security_policy' =>
+				'security_policy' =>
 					array(
-						'widevine' =>
 						array(
-							'security_level' => 1,
-							'required_hdcp_version' => 'HDCP_NONE',
-							'required_cgms_flags' => 'CGMS_NONE',
-							'disable_analog_output' => false,
-							'hdcp_srm_rule' => 'HDCP_SRM_RULE_NONE',
-							'override_device_revocation' => true
+						'widevine' =>
+							array(
+								'security_level' => 1,
+								'required_hdcp_version' => 'HDCP_NONE',
+								'required_cgms_flags' => 'CGMS_NONE',
+								'disable_analog_output' => false,
+								'hdcp_srm_rule' => 'HDCP_SRM_RULE_NONE',
+								'override_device_revocation' => true
+							)
 						)
 					)
 				);
