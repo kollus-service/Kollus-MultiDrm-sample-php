@@ -135,12 +135,17 @@
 					array(
 						'widevine' =>
 						array(
+							'security_level' => 1,
+							'required_hdcp_version' => 'HDCP_NONE',
+							'required_cgms_flags' => 'CGMS_NONE',
+							'disable_analog_output' => false,
+							'hdcp_srm_rule' => 'HDCP_SRM_RULE_NONE',
 							'override_device_revocation' => true
 						)
 					)
 				);
 			
-		}else{
+		}else {
 			$token = array(
 			'playback_policy'=> 
 				array(
@@ -150,8 +155,26 @@
 				),
 				'security_policy' =>
 				array(
-					'allow_mobile_abnormal_device' => false,
-					'playready_security_level' => 0
+					'playready' =>
+					array(
+						'security_level' => 150,
+						'digital_video_protection_level' => 100,
+						'analog_video_protection_level' => 100,
+						'digital_audio_protection_level' => 100,
+						'require_hdcp_type_1' => false
+					),
+					'fairplay' => 
+					array(
+						'hdcp_enforcement'=> -1,
+						'allow_airplay'=> true,
+						'allow_av_adapter'=> true
+					),
+					'ncg' => 
+					array(
+						'allow_mobile_abnormal_device' => false,
+						'allow_external_display' => false,
+						'control_hdcp'=> 0
+					),
 				)
 			);
 		}
