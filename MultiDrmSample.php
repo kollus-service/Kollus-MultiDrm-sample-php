@@ -147,36 +147,36 @@
 			
 		}else {
 			$token = array(
-			'playback_policy'=> 
-				array(
-					'limit' => true,
-					'persistent' => false,
-					'duration' => 86400
-				),
-				'security_policy' =>
-				array(
-					'playready' =>
+				'playback_policy'=> 
 					array(
-						'security_level' => 150,
-						'digital_video_protection_level' => 100,
-						'analog_video_protection_level' => 100,
-						'digital_audio_protection_level' => 100,
-						'require_hdcp_type_1' => false
+						'limit' => true,
+						'persistent' => false,
+						'duration' => 86400
 					),
-					'fairplay' => 
+					'security_policy' =>
 					array(
-						'hdcp_enforcement'=> -1,
-						'allow_airplay'=> true,
-						'allow_av_adapter'=> true
-					),
-					'ncg' => 
-					array(
-						'allow_mobile_abnormal_device' => false,
-						'allow_external_display' => false,
-						'control_hdcp'=> 0
-					),
-				)
-			);
+						'playready' =>
+						array(
+							'security_level' => 150,
+							'digital_video_protection_level' => 100,
+							'analog_video_protection_level' => 100,
+							'digital_audio_protection_level' => 100,
+							'require_hdcp_type_1' => false
+						),
+						'fairplay' => 
+						array(
+							'hdcp_enforcement'=> -1,
+							'allow_airplay'=> true,
+							'allow_av_adapter'=> true
+						),
+						'ncg' => 
+						array(
+							'allow_mobile_abnormal_device' => false,
+							'allow_external_display' => false,
+							'control_hdcp'=> 0
+						),
+					)
+				);
 		}
 
 		// step2 - 라이선스 룰 암호화
