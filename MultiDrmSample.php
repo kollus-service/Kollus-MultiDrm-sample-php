@@ -63,7 +63,7 @@
 			$streamingType = "dash";
 			break;
 		case 'Opera':
-			$drmType = "PlayReady";
+			$drmType = "Widevine";
 			$streamingType = "dash";
 			break;
 		case 'Safari':
