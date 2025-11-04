@@ -8,7 +8,7 @@
 	define('INKA_ACCESS_KEY', 'INKA_ACCESS_KEY'); // inkaDRM Access Key
 	define('INKA_SITE_KEY', 'INKA_SITE_KEY');     // inkaDRM Site Key
 	define('INKA_SITE_ID', 'INKA_SITE_ID');		  // inkaDRM Site ID
-	define('INKA_IV', 'INKA_IV');                 // inkaDRM AES 256 Encryption Initialization
+	define('INKA_IV', '0123456789abcdef');                 // inkaDRM AES 256 Encryption Initialization
 
 	// Kollus setting key
 	define('KOLLUS_SECURITY_KEY', 'KOLLUS_SECURITY_KEY'); //Kollus Account Key
