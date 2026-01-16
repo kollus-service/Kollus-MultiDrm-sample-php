@@ -1,6 +1,4 @@
 <?php
-	date_default_timezone_set('UTC');
-
 	require 'vendor/autoload.php';
 	use Firebase\JWT\JWT;
 
@@ -117,7 +115,7 @@
 
 	// function - inkaDRM 페이로드 생성 
 	function createInkaPayload($clientUserId, $cid) {
-		$timestamp = date("Y-m-d")."T".date("H:i:s")."Z";  // inkaDRM TimeStemp
+		$timestamp = gmdate('c');  // inkaDRM TimeStemp
 		$drmType = getStreamingType()[0];                  // inkaDRM DRM Type
 
 		// step1 - 설정 값 입력
