@@ -1,43 +1,52 @@
 <?php
-	date_default_timezone_set('UTC');
+date_default_timezone_set('UTC');
 
-	require 'vendor/autoload.php';
-	use Firebase\JWT\JWT;
+require 'vendor/autoload.php';
+use Firebase\JWT\JWT;
 
-	// Inka setting key
-	define('INKA_ACCESS_KEY', 'INKA_ACCESS_KEY'); // inkaDRM Access Key
-	define('INKA_SITE_KEY', 'INKA_SITE_KEY');     // inkaDRM Site Key
-	define('INKA_SITE_ID', 'INKA_SITE_ID');		  // inkaDRM Site ID
-	define('INKA_IV', '0123456789abcdef');                 // inkaDRM AES 256 Encryption Initialization
+// Inka setting key
+// Inka 설정 키 (Inka設定キー)
+define('INKA_ACCESS_KEY', 'INKA_ACCESS_KEY'); // inkaDRM Access Key (inkaDRMアクセスキー)
+define('INKA_SITE_KEY', 'INKA_SITE_KEY');     // inkaDRM Site Key (inkaDRMサイトキー)
+define('INKA_SITE_ID', 'INKA_SITE_ID');		  // inkaDRM Site ID (inkaDRMサイトID)
+define('INKA_IV', '0123456789abcdef');        // inkaDRM AES 256 Encryption Initialization (inkaDRM AES 256暗号化初期化ベクトル)
 
-	// Kollus setting key
-	define('KOLLUS_SECURITY_KEY', 'KOLLUS_SECURITY_KEY'); //Kollus Account Key
-	define('KOLLUS_CUSTOM_KEY', 'KOLLUS_CUSTOM_KEY');     //Kollus Custom User Key
+// Kollus setting key
+// Kollus 설정 키 (Kollus設定キー)
+define('KOLLUS_SECURITY_KEY', 'KOLLUS_SECURITY_KEY'); // Kollus Account Key (Kollusアカウントキー)
+define('KOLLUS_CUSTOM_KEY', 'KOLLUS_CUSTOM_KEY');     // Kollus Custom User Key (Kollusカスタムユーザーキー)
 
 
-	$clientUserId = 'CLIENT_USER_ID'; // Client User ID
-	$cid = 'CONTENTS_ID';             // Multi DRM Contents ID, Kollus Upload File Key
-	$mckey = 'MEDIA_CONTENT_KEY';     // Kollus MediaContentKey
+$clientUserId = 'CLIENT_USER_ID'; // Client User ID (クライアントユーザーID)
+$cid = 'CONTENTS_ID';             // Multi DRM Contents ID, Kollus Upload File Key (マルチDRMコンテンツID、Kollusアップロードファイルキー)
+$mckey = 'MEDIA_CONTENT_KEY';     // Kollus MediaContentKey (Kollusメディアコンテンツキー)
 
-	$jwt = createKollusJWT($clientUserId, $mckey, $cid);
+// Kollus JWT 생성 (Kollus JWT生成)
+$jwt = createKollusJWT($clientUserId, $mckey, $cid);
 ?>
 
 <?php
-	// function - 브라우저 체크 
-	function getStreamingType() {
-		//echo $_SERVER['HTTP_USER_AGENT'];
-		//$arrBrowsers = ["CriOS","Edge","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
-		$arrBrowsers = ["CriOS","Edge","Edg","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
-		$agent = $_SERVER['HTTP_USER_AGENT'];
-		$userBrowser = '';
-		
-		foreach ($arrBrowsers as $browser) {
-			if (strpos($agent, $browser) !== false) {
-				$userBrowser = $browser;
-				break;
-			}
+// function - 브라우저 체크 
+// ブラウザチェック関数 (ブラウザチェック関数)
+function getStreamingType()
+{
+	//echo $_SERVER['HTTP_USER_AGENT'];
+	//$arrBrowsers = ["CriOS","Edge","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
+	// 브라우저 목록 (ブラウザリスト)
+	$arrBrowsers = ["CriOS", "Edge", "Edg", "Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
+	$agent = $_SERVER['HTTP_USER_AGENT'];
+	$userBrowser = '';
+
+	// 브라우저 감지 (ブラウザ検出)
+	foreach ($arrBrowsers as $browser) {
+		if (strpos($agent, $browser) !== false) {
+			$userBrowser = $browser;
+			break;
 		}
-		switch ($userBrowser) {
+	}
+
+	// 브라우저별 DRM 타입 및 스트리밍 타입 설정 (ブラウザ別DRMタイプおよびストリーミングタイプ設定)
+	switch ($userBrowser) {
 		case 'MSIE':
 			$drmType = "PlayReady";
 			$streamingType = "dash";
@@ -74,65 +83,74 @@
 			$drmType = "FairPlay";
 			$streamingType = "hls";
 			break;
-		}
-		
-		if (strpos($agent, "Macintosh") && strpos($agent, "Edg") ) {
-			$drmType = "Widevine";
-			$streamingType = "dash";
-		}
-
-		//echo '<br> drmType : ' .$drmType;
-		//echo '<br> streamingType : ' .$streamingType;
-
-		return [$drmType, $streamingType];
 	}
 
-	// function - 콜러스 웹토큰 생성
-	function createKollusJWT ($clientUserId, $mckey, $cid) {
-		$payload = (object)array(
-			'expt' => time() + 86400, // 5 min
-			'cuid' => $clientUserId,
-			'mc' => array(
-				array(
-					'mckey' => $mckey,
-					'drm_policy'=>array(
-						'kind'=>'inka',
-						'streaming_type'=>getStreamingType()[1],
-						'data'=>array(
-							'license_url'=>'https://license.pallycon.com/ri/licenseManager.do',
-							'certificate_url'=>'https://license.pallycon.com/ri/fpsKeyManager.do?siteId='.INKA_SITE_ID,
-							'custom_header'=>array(
-								'key'=>'pallycon-customdata-v2',
-								'value'=> createInkaPayload($clientUserId, $cid),
-							)
+	// Mac Edge 예외 처리 (Mac Edge例外処理)
+	if (strpos($agent, "Macintosh") && strpos($agent, "Edg")) {
+		$drmType = "Widevine";
+		$streamingType = "dash";
+	}
+
+	//echo '<br> drmType : ' .$drmType;
+	//echo '<br> streamingType : ' .$streamingType;
+
+	return [$drmType, $streamingType];
+}
+
+// function - 콜러스 웹토큰 생성
+// Kollus Webトークン生成関数 (Kollus Webトークン生成関数)
+function createKollusJWT($clientUserId, $mckey, $cid)
+{
+	// JWT 페이로드 구성 (JWTペイロード構成)
+	$payload = (object) array(
+		'expt' => time() + 86400, // 5 min
+		'cuid' => $clientUserId,  // 클라이언트 사용자 ID (クライアントユーザーID)
+		'mc' => array(
+			array(
+				'mckey' => $mckey,
+				'drm_policy' => array(
+					'kind' => 'inka',
+					'streaming_type' => getStreamingType()[1],
+					'data' => array(
+						'license_url' => 'https://license.pallycon.com/ri/licenseManager.do',
+						'certificate_url' => 'https://license.pallycon.com/ri/fpsKeyManager.do?siteId=' . INKA_SITE_ID,
+						'custom_header' => array(
+							'key' => 'pallycon-customdata-v2',
+							'value' => createInkaPayload($clientUserId, $cid),
 						)
 					)
 				)
-			),
-		);
+			)
+		),
+	);
 
-		return JWT::encode($payload, KOLLUS_SECURITY_KEY);
-	}
+	// JWT 인코딩 (JWTエンコード)
+	return JWT::encode($payload, KOLLUS_SECURITY_KEY);
+}
 
 
-	// function - inkaDRM 페이로드 생성 
-	function createInkaPayload($clientUserId, $cid) {
-		$timestamp = date("Y-m-d")."T".date("H:i:s")."Z";  // inkaDRM TimeStemp
-		$drmType = getStreamingType()[0];                  // inkaDRM DRM Type
+// function - inkaDRM 페이로드 생성 
+// inkaDRMペイロード生成関数 (inkaDRMペイロード生成関数)
+function createInkaPayload($clientUserId, $cid)
+{
+	$timestamp = date("Y-m-d") . "T" . date("H:i:s") . "Z";  // inkaDRM TimeStemp
+	$drmType = getStreamingType()[0];                  // inkaDRM DRM Type
 
-		// step1 - 설정 값 입력
-		if($drmType == 'Widevine'){
-			$token = array(
-				'policy_version' =>2,
-				'playback_policy' =>
+	// step1 - 설정 값 입력
+	// ステップ1 - 設定値入力 (ステップ1 - 設定値入力)
+	if ($drmType == 'Widevine') {
+		// Widevine 정책 설정 (Widevineポリシー設定)
+		$token = array(
+			'policy_version' => 2,
+			'playback_policy' =>
+				array(
+					'limit' => true,
+					'persistent' => false,
+					'duration' => 86400  // 재생 가능 시간 (24시간) (再生可能時間(24時間))
+				),
+			'security_policy' =>
+				array(
 					array(
-						'limit' => true,
-						'persistent' => false,
-						'duration' => 86400
-					),
-				'security_policy' =>
-					array(
-						array(
 						'widevine' =>
 							array(
 								'security_level' => 1,
@@ -142,21 +160,22 @@
 								'hdcp_srm_rule' => 'HDCP_SRM_RULE_NONE',
 								'override_device_revocation' => true
 							)
-						)
 					)
-				);
-			
-		}else {
-			$token = array(
-				'playback_policy'=> 
-					array(
-						'limit' => true,
-						'persistent' => false,
-						'duration' => 86400
-					),
-					'security_policy' =>
-					array(
-						'playready' =>
+				)
+		);
+
+	} else {
+		// PlayReady/FairPlay/NCG 정책 설정 (PlayReady/FairPlay/NCGポリシー設定)
+		$token = array(
+			'playback_policy' =>
+				array(
+					'limit' => true,
+					'persistent' => false,
+					'duration' => 86400  // 재생 가능 시간 (24시간) (再生可能時間(24時間))
+				),
+			'security_policy' =>
+				array(
+					'playready' =>
 						array(
 							'security_level' => 150,
 							'digital_video_protection_level' => 100,
@@ -164,76 +183,84 @@
 							'digital_audio_protection_level' => 100,
 							'require_hdcp_type_1' => false
 						),
-						'fairplay' => 
+					'fairplay' =>
 						array(
-							'hdcp_enforcement'=> -1,
-							'allow_airplay'=> true,
-							'allow_av_adapter'=> true
+							'hdcp_enforcement' => -1,
+							'allow_airplay' => true,
+							'allow_av_adapter' => true
 						),
-						'ncg' => 
+					'ncg' =>
 						array(
 							'allow_mobile_abnormal_device' => false,
 							'allow_external_display' => false,
-							'control_hdcp'=> 0
+							'control_hdcp' => 0
 						),
-					)
-				);
-		}
-
-		// step2 - 라이선스 룰 암호화
-		$token = json_encode($token);
-		$token = base64_encode(openssl_encrypt($token,'AES-256-CBC', INKA_SITE_KEY, OPENSSL_RAW_DATA, INKA_IV));
-
-		// step3 - 해시 값 생성
-		$hash = INKA_ACCESS_KEY.$drmType.INKA_SITE_ID.$clientUserId.$cid.$token.$timestamp;
-		$hash = base64_encode(hash("sha256", $hash, true));
-
-		// step4 - 라이선스 토큰 생성
-		$inka_payload = array(
-			'drm_type' => $drmType,
-			'site_id' => INKA_SITE_ID,
-			'user_id' => $clientUserId,
-			'cid' => $cid,
-			'token' => $token,
-			'timestamp' => $timestamp,
-			'hash' => $hash
+				)
 		);
-
-		$inka_payload = json_encode($inka_payload);
-		$inka_payload = base64_encode($inka_payload);
-
-		//echo '<br> inka_payload : ' .$inka_payload;
-		return $inka_payload;
 	}
+
+	// step2 - 라이선스 룰 암호화
+	// ステップ2 - ライセンスルール暗号化 (ステップ2 - ライセンスルール暗号化)
+	$token = json_encode($token);
+	$token = base64_encode(openssl_encrypt($token, 'AES-256-CBC', INKA_SITE_KEY, OPENSSL_RAW_DATA, INKA_IV));
+
+	// step3 - 해시 값 생성
+	// ステップ3 - ハッシュ値生成 (ステップ3 - ハッシュ値生成)
+	$hash = INKA_ACCESS_KEY . $drmType . INKA_SITE_ID . $clientUserId . $cid . $token . $timestamp;
+	$hash = base64_encode(hash("sha256", $hash, true));
+
+	// step4 - 라이선스 토큰 생성
+	// ステップ4 - ライセンストークン生成 (ステップ4 - ライセンストークン生成)
+	$inka_payload = array(
+		'drm_type' => $drmType,
+		'site_id' => INKA_SITE_ID,
+		'user_id' => $clientUserId,
+		'cid' => $cid,
+		'token' => $token,
+		'timestamp' => $timestamp,
+		'hash' => $hash
+	);
+
+	$inka_payload = json_encode($inka_payload);
+	$inka_payload = base64_encode($inka_payload);
+
+	//echo '<br> inka_payload : ' .$inka_payload;
+	return $inka_payload;
+}
 ?>
 
 <style>
-.countsort {
-	position : relative;
-	width : 100%;
-	height : 0;
-	padding-bottom : 56.25%;
-}
+	.countsort {
+		position: relative;
+		width: 100%;
+		height: 0;
+		padding-bottom: 56.25%;
+	}
 
-.video {
-	position : absolute;
-	top : 0;
-	left : 0;
-	width : 100%;
-	height : 100%;
-}
+	.video {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
 </style>
 
 <html lang="ko">
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,maximum-scale=1.0" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,maximum-scale=1.0" />
 
 </head>
-<body>
-<div class="countsort">
 
-<iframe id="iframe" src="https://v.kr.kollus.com/s?jwt=<?php echo $jwt;?>&custom_key=<?php echo KOLLUS_CUSTOM_KEY;?>&player_version=html5" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="encrypted-media" class="video"></iframe>
-</div>
+<body>
+	<div class="countsort">
+		<!-- Kollus 비디오 플레이어 iframe (Kollusビデオプレーヤーiframe) -->
+		<iframe id="iframe"
+			src="https://v.kr.kollus.com/s?jwt=<?php echo $jwt; ?>&custom_key=<?php echo KOLLUS_CUSTOM_KEY; ?>&player_version=html5"
+			allowfullscreen webkitallowfullscreen mozallowfullscreen allow="encrypted-media" class="video"></iframe>
+	</div>
 </body>
+
 </html>
