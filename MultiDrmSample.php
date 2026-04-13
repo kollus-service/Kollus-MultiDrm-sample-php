@@ -5,39 +5,38 @@ require 'vendor/autoload.php';
 use Firebase\JWT\JWT;
 
 // Inka setting key
-// Inka 설정 키 (Inka設定キー)
-define('INKA_ACCESS_KEY', 'INKA_ACCESS_KEY'); // inkaDRM Access Key (inkaDRMアクセスキー)
-define('INKA_SITE_KEY', 'INKA_SITE_KEY');     // inkaDRM Site Key (inkaDRMサイトキー)
-define('INKA_SITE_ID', 'INKA_SITE_ID');		  // inkaDRM Site ID (inkaDRMサイトID)
-define('INKA_IV', '0123456789abcdef');        // inkaDRM AES 256 Encryption Initialization (inkaDRM AES 256暗号化初期化ベクトル)
+// Inka 설정 키
+define('INKA_ACCESS_KEY', 'INKA_ACCESS_KEY'); // inkaDRM Access Key
+define('INKA_SITE_KEY', 'INKA_SITE_KEY');     // inkaDRM Site Key
+define('INKA_SITE_ID', 'INKA_SITE_ID');		  // inkaDRM Site ID
+define('INKA_IV', '0123456789abcdef');        // inkaDRM AES 256 Encryption Initialization
 
 // Kollus setting key
-// Kollus 설정 키 (Kollus設定キー)
-define('KOLLUS_SECURITY_KEY', 'KOLLUS_SECURITY_KEY'); // Kollus Account Key (Kollusアカウントキー)
-define('KOLLUS_CUSTOM_KEY', 'KOLLUS_CUSTOM_KEY');     // Kollus Custom User Key (Kollusカスタムユーザーキー)
+// Kollus 설정 키
+define('KOLLUS_SECURITY_KEY', 'KOLLUS_SECURITY_KEY'); // Kollus Account Key
+define('KOLLUS_CUSTOM_KEY', 'KOLLUS_CUSTOM_KEY');     // Kollus Custom User Key
 
 
-$clientUserId = 'CLIENT_USER_ID'; // Client User ID (クライアントユーザーID)
-$cid = 'CONTENTS_ID';             // Multi DRM Contents ID, Kollus Upload File Key (マルチDRMコンテンツID、Kollusアップロードファイルキー)
-$mckey = 'MEDIA_CONTENT_KEY';     // Kollus MediaContentKey (Kollusメディアコンテンツキー)
+$clientUserId = 'CLIENT_USER_ID'; // Client User ID
+$cid = 'CONTENTS_ID';             // Multi DRM Contents ID, Kollus Upload File Key
+$mckey = 'MEDIA_CONTENT_KEY';     // Kollus MediaContentKey
 
-// Kollus JWT 생성 (Kollus JWT生成)
+// Kollus JWT 생성
 $jwt = createKollusJWT($clientUserId, $mckey, $cid);
 ?>
 
 <?php
-// function - 브라우저 체크 
-// ブラウザチェック関数 (ブラウザチェック関数)
+// function - 브라우저 체크
 function getStreamingType()
 {
 	//echo $_SERVER['HTTP_USER_AGENT'];
 	//$arrBrowsers = ["CriOS","Edge","Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
-	// 브라우저 목록 (ブラウザリスト)
+	// 브라우저 목록
 	$arrBrowsers = ["CriOS", "Edge", "Edg", "Firefox", "Chrome", "Safari", "Opera", "MSIE", "Trident"];
 	$agent = $_SERVER['HTTP_USER_AGENT'];
 	$userBrowser = '';
 
-	// 브라우저 감지 (ブラウザ検出)
+	// 브라우저 감지
 	foreach ($arrBrowsers as $browser) {
 		if (strpos($agent, $browser) !== false) {
 			$userBrowser = $browser;
@@ -45,7 +44,7 @@ function getStreamingType()
 		}
 	}
 
-	// 브라우저별 DRM 타입 및 스트리밍 타입 설정 (ブラウザ別DRMタイプおよびストリーミングタイプ設定)
+	// 브라우저별 DRM 타입 및 스트리밍 타입 설정
 	switch ($userBrowser) {
 		case 'MSIE':
 			$drmType = "PlayReady";
@@ -85,7 +84,7 @@ function getStreamingType()
 			break;
 	}
 
-	// Mac Edge 예외 처리 (Mac Edge例外処理)
+	// Mac Edge 예외 처리
 	if (strpos($agent, "Macintosh") && strpos($agent, "Edg")) {
 		$drmType = "Widevine";
 		$streamingType = "dash";
@@ -98,13 +97,12 @@ function getStreamingType()
 }
 
 // function - 콜러스 웹토큰 생성
-// Kollus Webトークン生成関数 (Kollus Webトークン生成関数)
 function createKollusJWT($clientUserId, $mckey, $cid)
 {
-	// JWT 페이로드 구성 (JWTペイロード構成)
+	// JWT 페이로드 구성
 	$payload = (object) array(
 		'expt' => time() + 86400, // 5 min
-		'cuid' => $clientUserId,  // 클라이언트 사용자 ID (クライアントユーザーID)
+		'cuid' => $clientUserId,  // 클라이언트 사용자 ID
 		'mc' => array(
 			array(
 				'mckey' => $mckey,
@@ -124,29 +122,27 @@ function createKollusJWT($clientUserId, $mckey, $cid)
 		),
 	);
 
-	// JWT 인코딩 (JWTエンコード)
+	// JWT 인코딩
 	return JWT::encode($payload, KOLLUS_SECURITY_KEY);
 }
 
 
-// function - inkaDRM 페이로드 생성 
-// inkaDRMペイロード生成関数 (inkaDRMペイロード生成関数)
+// function - inkaDRM 페이로드 생성
 function createInkaPayload($clientUserId, $cid)
 {
 	$timestamp = date("Y-m-d") . "T" . date("H:i:s") . "Z";  // inkaDRM TimeStemp
 	$drmType = getStreamingType()[0];                  // inkaDRM DRM Type
 
 	// step1 - 설정 값 입력
-	// ステップ1 - 設定値入力 (ステップ1 - 設定値入力)
 	if ($drmType == 'Widevine') {
-		// Widevine 정책 설정 (Widevineポリシー設定)
+		// Widevine 정책 설정
 		$token = array(
 			'policy_version' => 2,
 			'playback_policy' =>
 				array(
 					'limit' => true,
 					'persistent' => false,
-					'duration' => 86400  // 재생 가능 시간 (24시간) (再生可能時間(24時間))
+					'duration' => 86400  // 재생 가능 시간 (24시간)
 				),
 			'security_policy' =>
 				array(
@@ -165,13 +161,13 @@ function createInkaPayload($clientUserId, $cid)
 		);
 
 	} else {
-		// PlayReady/FairPlay/NCG 정책 설정 (PlayReady/FairPlay/NCGポリシー設定)
+		// PlayReady/FairPlay/NCG 정책 설정
 		$token = array(
 			'playback_policy' =>
 				array(
 					'limit' => true,
 					'persistent' => false,
-					'duration' => 86400  // 재생 가능 시간 (24시간) (再生可能時間(24時間))
+					'duration' => 86400  // 재생 가능 시간 (24시간)
 				),
 			'security_policy' =>
 				array(
@@ -200,17 +196,14 @@ function createInkaPayload($clientUserId, $cid)
 	}
 
 	// step2 - 라이선스 룰 암호화
-	// ステップ2 - ライセンスルール暗号化 (ステップ2 - ライセンスルール暗号化)
 	$token = json_encode($token);
 	$token = base64_encode(openssl_encrypt($token, 'AES-256-CBC', INKA_SITE_KEY, OPENSSL_RAW_DATA, INKA_IV));
 
 	// step3 - 해시 값 생성
-	// ステップ3 - ハッシュ値生成 (ステップ3 - ハッシュ値生成)
 	$hash = INKA_ACCESS_KEY . $drmType . INKA_SITE_ID . $clientUserId . $cid . $token . $timestamp;
 	$hash = base64_encode(hash("sha256", $hash, true));
 
 	// step4 - 라이선스 토큰 생성
-	// ステップ4 - ライセンストークン生成 (ステップ4 - ライセンストークン生成)
 	$inka_payload = array(
 		'drm_type' => $drmType,
 		'site_id' => INKA_SITE_ID,
@@ -256,7 +249,7 @@ function createInkaPayload($clientUserId, $cid)
 
 <body>
 	<div class="countsort">
-		<!-- Kollus 비디오 플레이어 iframe (Kollusビデオプレーヤーiframe) -->
+		<!-- Kollus 비디오 플레이어 iframe -->
 		<iframe id="iframe"
 			src="https://v.kr.kollus.com/s?jwt=<?php echo $jwt; ?>&custom_key=<?php echo KOLLUS_CUSTOM_KEY; ?>&player_version=html5"
 			allowfullscreen webkitallowfullscreen mozallowfullscreen allow="encrypted-media" class="video"></iframe>
